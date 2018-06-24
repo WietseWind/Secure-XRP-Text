@@ -25,7 +25,7 @@
           <form>
             <div class="form-group">
               <label>Family seed (<code>sXXX...</code>)</label>
-              <input type="text" class="form-control form-control-lg" placeholder="Enter your family seed, eg. sXXXXXXXX...">
+              <input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" v-model="familySeed" type="text" class="form-control form-control-lg" placeholder="Enter your family seed, eg. sXXXXXXXX...">
             </div>
           </form>
         </div>
@@ -33,39 +33,128 @@
           <form>
             <div class="form-group">
               <label>Mnemonic (words)</label>
-              <textarea class="form-control form-control-lg" rows="5" placeholder="Enter your mnemonic (lowercase words)"></textarea>
+              <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" v-model="mnemonic" class="form-control form-control-lg" rows="5" placeholder="Enter your mnemonic (lowercase words)"></textarea>
             </div>
             <div class="form-group form-check">
-              <input v-model="mnemonicPassphrase" type="checkbox" class="form-check-input" id="mnemonicPassphrase">
-              <label class="form-check-label" for="mnemonicPassphrase">My mnemonic has a passphrase ("25th word")</label>
+              <input v-model="useMnemonicPassphrase" type="checkbox" class="form-check-input" id="useMnemonicPassphrase">
+              <label class="form-check-label" for="useMnemonicPassphrase">My mnemonic has a passphrase ("25th word")</label>
             </div>
-            <div class="form-group" v-if="mnemonicPassphrase">
+            <div class="form-group" v-if="useMnemonicPassphrase">
               <!-- <label>Passphrase ("25th word")</label> -->
-              <input type="text" class="form-control form-control-lg" placeholder="Enter your mnemonic passphrase">
+              <input autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" v-model="mnemonicPassphrase" type="text" class="form-control form-control-lg" placeholder="Enter your mnemonic passphrase">
             </div>
           </form>
+        </div>
+        <h4 class="text-center" v-if="validAddress[type] && !validAddress.calculating">
+          <small class="text-muted">Your calculated account address:</small><br />
+          <code class="d-inline-block pt-2 text-primary"><b>{{ validAddress[type] }}</b></code>
+        </h4>
+        <div class="alert text-center" v-if="validAddress.calculating" :class="{ 'alert-secondary text-muted': 1 === 1 }">
+          <i class="fas fa-circle-notch fa-spin"></i> Calculating account address...
         </div>
       </div>
     </div>
 
     <div class="clearfix mt-5"></div>
     <button @click="$state.consent=false" class="float-left btn btn-xs btn-outline-secondary mt-2"><i class="fa fa-arrow-left"></i> Cancel</button>
-    <button disabled class="float-right btn btn-lg btn-primary">Next <i class="fa fa-arrow-right"></i></button>
+    <button :disabled="validAddress[type] === ''" class="float-right btn btn-lg btn-primary">Next <i class="fa fa-arrow-right"></i></button>
+    <!-- <div class="clearfix"></div> -->
+    <!-- <pre>{{ validAddress.keypair[type] }}</pre> -->
   </div>
 </template>
 
 <script>
+import keypairs from 'ripple-keypairs'
+import bip39 from 'bip39'
+import bip32 from 'ripple-bip32'
+
 export default {
   name: 'AddAccount',
   data () {
     return {
       type: 'familySeed',
-      mnemonicPassphrase: false
+      useMnemonicPassphrase: false,
+      familySeed: '',
+      mnemonic: '',
+      mnemonicPassphrase: '',
+      validAddress: {
+        calculating: false,
+        familySeed: '',
+        mnemonic: '',
+        keypair: {
+          familySeed: {
+            privateKey: '',
+            publicKey: ''
+          },
+          mnemonic: {
+            privateKey: '',
+            publicKey: ''
+          }
+        }
+      }
     }
   },
   watch: {
+    type () {
+      // recalculate
+    },
+    familySeed () {
+      this.validAddress.familySeed = ''
+      let familySeed = this.familySeed.trim()
+      if (familySeed.match(/^s[0-9a-zA-Z]{20,30}/) && familySeed.length > 26) {
+        try {
+          let keypair = keypairs.deriveKeypair(this.familySeed)
+          let address = keypairs.deriveAddress(keypair.publicKey)
+          this.validAddress.familySeed = address
+          this.validAddress.keypair[this.type].publicKey = keypair.publicKey
+          this.validAddress.keypair[this.type].privateKey = keypair.privateKey
+        } catch (e) {
+          console.log(e)
+        }
+      }
+    },
+    mnemonic () {
+      this.mnemonicToAccount()
+    },
+    useMnemonicPassphrase () {
+      if (!this.useMnemonicPassphrase) {
+        if (this.mnemonicPassphrase.trim() !== '') {
+          this.validAddress.calculating = true
+          this.mnemonicPassphrase = ''
+          this.validAddress.mnemonic = ''
+        }
+      }
+    },
+    mnemonicPassphrase () {
+      this.mnemonicToAccount()
+    }
   },
   methods: {
+    mnemonicToAccount () {
+      clearTimeout(window.mnemonicCalculate)
+      if (this.mnemonic.trim().toLowerCase().replace(/[ ]+/g, ' ').split(' ').length >= 24) {
+        window.mnemonicCalculate = setTimeout(() => {
+          this.validAddress.mnemonic = ''
+          this.validAddress.calculating = true
+          setTimeout(() => {
+            try {
+              let seed = bip39.mnemonicToSeed(this.mnemonic.trim().toLowerCase().replace(/[ ]+/g, ' '), this.useMnemonicPassphrase && this.mnemonicPassphrase.trim() !== '' ? this.mnemonicPassphrase : null)
+              let m = bip32.fromSeedBuffer(seed)
+              let keyPair = m.derivePath("m/44'/144'/0'/0/0").keyPair.getKeyPairs()
+              this.validAddress.keypair[this.type].publicKey = keyPair.publicKey
+              this.validAddress.keypair[this.type].privateKey = keyPair.privateKey
+              this.validAddress.mnemonic = keypairs.deriveAddress(keyPair.publicKey)
+              this.validAddress.calculating = false
+            } catch (e) {
+              this.validAddress.calculating = false
+              console.log(e)
+            }
+          }, 100)
+        }, 1000)
+      } else {
+        this.validAddress.mnemonic = ''
+      }
+    }
   },
   mounted () {
   }

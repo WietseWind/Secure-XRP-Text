@@ -11,10 +11,13 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "bip39": "^2.5.0",
     "crypto": "^1.0.1",
     "elliptic": "^6.4.0",
     "localforage": "^1.7.2",
+    "ripple-bip32": "0.0.3",
     "ripple-keypairs": "^0.10.1",
+    "ripple-sign-keypairs": "^1.0.2",
     "v-debounce": "^0.1.2",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
