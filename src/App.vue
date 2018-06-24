@@ -1,43 +1,118 @@
 <template>
   <div id="app">
-    <router-view/>
+    <!-- <div id="not-ready" v-if="!$state.ready">
+      <AppLoading message="Loading application" />
+    </div> -->
+    <div id="no-consent" v-if="$state.ready && !$state.consent">
+      <AppLoading message="Welcome! A few notes..."><Intro /></AppLoading>
+    </div>
+    <div id="no-consent" v-if="$state.ready && $state.consent && $state.accounts.length < 1">
+      <AppLoading message="Add your account">
+        <AddAccount />
+      </AppLoading>
+    </div>
+    <div id="ready" v-if="$state.ready && $state.consent && $state.accounts.length > 0">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="header container-fluid bg-light">
+          <div class="container">
+            <router-link to="/" class="logo">
+              <i class="xrp">x</i> <b>XRP Text</b>
+            </router-link>
+            <small class="slogan text-secondary"><i class="far fa-comment-alt"></i> Secure Messaging</small>
+            <div class="float-right col-1 col-md-2 col-lg-3 col-xl-2 text-right pr-0">
+              <div class="btn-group float-right">
+                <button v-on:blur="topRightBlur" @click="$state.ui.topRightMenu=!$state.ui.topRightMenu" type="button" class="btn bg-light btn-outline-none">
+                  <span class="d-none d-sm-inline-block">{{ $state.user.name }}</span>
+                  <i class="fas fa-caret-down"></i>
+                </button>
+              </div>
+              <div v-if="$state.ui.topRightMenu" class="dropdown-menu d-block dropdown-menu-right">
+                <!-- <router-link tag="button" to="/" class="dropdown-item" type="router-link">Accounts</router-link> -->
+                <!-- <div class="dropdown-divider"></div> -->
+                <a href="" onclick="return false;" @click="$state.logout" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+                <div class="dropdown-divider"></div>
+                <a href="https://github.com/WietseWind/Secure-XRP-Text" target="_blank" class="dropdown-item">Source</a>
+              </div>
+            </div>
+            <div class="float-right d-none d-md-block col-5 col-lg-4 col-xl-5">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search...">
+                <div class="input-group-append">
+                  <button class="btn btn-secondary" type="button">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <router-view />
+      <router-view name="composer" />
+      <!-- v-if="1 === 1 || $store" -->
+    </div>
   </div>
 </template>
 
 <script>
+import AppLoading from '@/partials/AppLoading'
+import Intro from '@/partials/Intro'
+import AddAccount from '@/partials/AddAccount'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    AppLoading,
+    Intro,
+    AddAccount
+  },
+  mounted () {
+  },
+  data () {
+    return {
+    }
+  },
+  methods: {
+    topRightBlur (e) {
+      setTimeout(() => {
+        this.$state.ui.topRightMenu = false
+      }, 250)
+    }
+  }
 }
 </script>
 
-<style lang="scss">
-  @font-face {
-    font-family: 'r1ppled';
-    src:  url('/static/xrp-font/r1ppled.eot');
-    src:  url('/static/xrp-font/r1ppled.eot#iefix') format('embedded-opentype'),
-      url('/static/xrp-font/r1ppled.ttf') format('truetype'),
-      url('/static/xrp-font/r1ppled.woff') format('woff'),
-      url('/static/xrp-font/r1ppled.svg#r1ppled') format('svg');
-    font-weight: normal;
-    font-style: normal;
+<style lang="scss" scoped>
+  div.header {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+
+    .logo {
+      font-size: 1.5em;
+      top: .06em;
+      position: relative;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+
+    .dropdown-menu {
+      margin-top: 6px;
+      right: -3px;
+      .dropdown-item { cursor: pointer; }
+    }
+
+    small.slogan {
+      font-size: .8em;
+      position: relative;
+      display: inline-block;
+      top: -0.8em;
+      padding-left: 0.8em;
+    }
   }
 
-  .xrp {
-    font-family: 'r1ppled';
-    display: inline-block;
-    font-style: normal;
-    font-size: 2em;
-    line-height: 0;
-    overflow: visible;
-    position: relative;
-    top: 0.13em;
-    padding-right: .1em;
-  }
-
-  html {
-    font-family: 'Hind', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: #2c3e50;
+  nav.navbar {
+    margin-bottom: 1em;
   }
 </style>
