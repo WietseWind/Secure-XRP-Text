@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import localforage from 'localforage'
+import crypto from 'crypto'
 
 localforage.config({ name: 'XrpMessaging', version: 1.0, storeName: 'xrpmessaging', description: 'Send encrypted messages on the XRPL' })
 
@@ -9,7 +10,7 @@ export default new Vue({
     return {
       ready: false,
       listing: 'inbox',
-      user: { name: 'Wietse' },
+      user: { name: '' },
       ui: { topRightMenu: false },
       consent: false,
       composer: {
@@ -21,6 +22,7 @@ export default new Vue({
         value: ''
       },
       accounts: [],
+      encryptedAccounts: [],
       messages: {
         $cursor: { ledger: 0 },
         inbox: [],
@@ -38,6 +40,12 @@ export default new Vue({
       handler () {
         this.persist()
       }
+    },
+    'encryptedAccounts': {
+      deep: true,
+      handler () {
+        this.persist()
+      }
     }
   },
   computed: {
@@ -49,9 +57,52 @@ export default new Vue({
     }
   },
   methods: {
+    addAccount (accountData, passHash) {
+      this.encryptedAccounts.push({
+        address: accountData.address,
+        name: accountData.address,
+        encryptedKeypair: this.encrypt(JSON.stringify(accountData.keypair), passHash)
+      })
+      this.accounts.push({ address: accountData.address, name: accountData.address, keypair: accountData.keypair })
+    },
+    login (passHash) {
+      try {
+        let decrypted = this.decrypt(this.encryptedAccounts[0].encryptedKeypair, passHash)
+        let decryptedString = Buffer.from(decrypted, 'hex').toString('utf-8')
+        let decryptedKeypair = JSON.parse(decryptedString)
+        if (typeof decryptedKeypair.privateKey === 'string' && typeof decryptedKeypair.publicKey === 'string') {
+          this.accounts.push(Object.assign(this.encryptedAccounts[0], {
+            keypair: decryptedKeypair
+          }))
+        }
+      } catch (e) {
+        console.log('Unable to decrypt', e)
+      }
+    },
+    encrypt (text, secret) {
+      const IV_LENGTH = 16
+      let iv = crypto.randomBytes(IV_LENGTH)
+      let cipher = crypto.createCipheriv('aes-' + (secret.length * 4) + '-cbc', Buffer.from(secret, 'hex'), iv)
+      let encrypted = cipher.update(text)
+      encrypted = Buffer.concat([encrypted, cipher.final()])
+      return iv.toString('hex') + encrypted.toString('hex')
+    },
+    decrypt (text, secret) {
+      let iv = Buffer.from(text.substr(0, 32), 'hex')
+      let encryptedText = Buffer.from(text.substr(32), 'hex')
+      let decipher = crypto.createDecipheriv('aes-' + (secret.length * 4) + '-cbc', Buffer.from(secret, 'hex'), iv)
+      let decrypted = decipher.update(encryptedText)
+      decrypted = Buffer.concat([decrypted, decipher.final()])
+      return decrypted.toString('hex').toUpperCase()
+    },
     logout () {
-      console.log('Destroy')
+      console.log('Logout')
       this.accounts = []
+    },
+    purge () {
+      console.log('Destroy (Purge)')
+      this.accounts = []
+      this.encryptedAccounts = []
       this.consent = false
     },
     persist () {
@@ -59,7 +110,8 @@ export default new Vue({
       localforage.setItem('state', {
         user: this.user,
         consent: this.consent,
-        composer: this.composer
+        composer: this.composer,
+        encryptedAccounts: this.encryptedAccounts
       })
     },
     /**

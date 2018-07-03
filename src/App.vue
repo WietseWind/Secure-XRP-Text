@@ -6,32 +6,39 @@
     <div id="no-consent" v-if="$state.ready && !$state.consent">
       <AppLoading message="Welcome! A few notes..."><Intro /></AppLoading>
     </div>
-    <div id="no-consent" v-if="$state.ready && $state.consent && $state.accounts.length < 1">
+    <div id="no-consent" v-if="$state.ready && $state.consent && $state.encryptedAccounts.length < 1">
       <AppLoading message="Add your account">
         <AddAccount />
       </AppLoading>
     </div>
-    <div id="ready" v-if="$state.ready && $state.consent && $state.accounts.length > 0">
+    <div id="no-consent" v-if="$state.ready && $state.consent && $state.encryptedAccounts.length > 0 && $state.accounts.length < 1">
+      <AppLoading message="Login">
+        <Login />
+      </AppLoading>
+    </div>
+    <div id="ready" v-if="$state.ready && $state.consent && $state.encryptedAccounts.length > 0" v-show="$state.accounts.length > 0">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="header container-fluid bg-light">
           <div class="container">
             <router-link to="/" class="logo">
               <i class="xrp">x</i> <b>XRP Text</b>
             </router-link>
-            <small class="slogan text-secondary"><i class="far fa-comment-alt"></i> Secure Messaging</small>
+            <small class="d-none d-sm-inline-block slogan text-secondary"><i class="far fa-comment-alt"></i> Secure Messaging</small>
             <div class="float-right col-1 col-md-2 col-lg-3 col-xl-2 text-right pr-0">
               <div class="btn-group float-right">
                 <button v-on:blur="topRightBlur" @click="$state.ui.topRightMenu=!$state.ui.topRightMenu" type="button" class="btn bg-light btn-outline-none">
-                  <span class="d-none d-sm-inline-block">{{ $state.user.name }}</span>
+                  <span class="d-none d-sm-inline-block">{{ $state.user.name.length > 0 ? $state.user.name : 'Account' }}</span>
                   <i class="fas fa-caret-down"></i>
                 </button>
               </div>
               <div v-if="$state.ui.topRightMenu" class="dropdown-menu d-block dropdown-menu-right">
                 <!-- <router-link tag="button" to="/" class="dropdown-item" type="router-link">Accounts</router-link> -->
                 <!-- <div class="dropdown-divider"></div> -->
-                <a href="" onclick="return false;" @click="$state.logout" class="dropdown-item"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+                <a href="" onclick="return false;" @click="$state.logout" class="pl-3 text-primary dropdown-item"><i class="fas fa-fw fa-users"></i> Contacts</a>
+                <!-- <div class="dropdown-divider"></div> -->
+                <a href="" onclick="return false;" @click="$state.logout" class="pl-3 dropdown-item"><i class="fas fa-fw fa-lock"></i> Lock session</a>
                 <div class="dropdown-divider"></div>
-                <a href="https://github.com/WietseWind/Secure-XRP-Text" target="_blank" class="dropdown-item">Source</a>
+                <a href="" onclick="return false;" @click="$state.purge" class="pl-3 dropdown-item text-danger"><i class="fas fa-fw fa-sign-out-alt"></i> Sign out</a>
               </div>
             </div>
             <div class="float-right d-none d-md-block col-5 col-lg-4 col-xl-5">
@@ -49,7 +56,7 @@
       </nav>
 
       <router-view />
-      <router-view name="composer" />
+      <router-view name="composer" class="mb-3" />
       <!-- v-if="1 === 1 || $store" -->
     </div>
   </div>
@@ -58,6 +65,7 @@
 <script>
 import AppLoading from '@/partials/AppLoading'
 import Intro from '@/partials/Intro'
+import Login from '@/partials/Login'
 import AddAccount from '@/partials/AddAccount'
 
 export default {
@@ -65,7 +73,8 @@ export default {
   components: {
     AppLoading,
     Intro,
-    AddAccount
+    AddAccount,
+    Login
   },
   mounted () {
   },

@@ -6,7 +6,7 @@
     </p>
     <p>
       Every XRP account <a href="https://xrpcommunity.blog/keys-are-key-secret-keys-signing-transactions/" target="_blank">consists of a public key and
-      a private key</a> and the <a href="https://dv7ibjc.dlvr.cloud/shared%20secret.png" target="_blank">Diffie Hellman algorithm</a> allows you to get
+      a private key</a> and the <a href="https://dv7ibjc.dlvr.cloud/shared%20secret.png" target="_blank">Diffie Hellman key exchange scheme</a> allows you to get
       a shared secret based on your private key and someone else's public key (and the other way around). Combining this with the XRPL feature to
       send <i>Memos</i>, you can <b>send encrypted messages only you and the recipient can decode and read</b> 😃
     </p>
@@ -31,7 +31,7 @@
         </ol>
       </li>
       <li v-show="approvals > 0" class="mt-1 mb-1"><b class="text-danger">Please think very carefully about what you are going to send to someone else.</b>
-        <div class="alert alert-warning text-center">The cryptography used to encrypt your messages <b class="text-primary">is safe today</b>, but <b class="text-danger">may not be in the future</b> (eg. due to quantum computing).</div>
+        <div class="alert alert-warning text-center">The cryptography used to encrypt your messages <b class="text-primary">is safe today</b>, but <b class="text-danger">may not be in the future</b> (eg. due to quantum computing). <b>Don't put anything super important in the encrypted message!</b></div>
       </li>
       <li v-show="approvals > 1" class="mt-1 mb-1"><b class="text-danger">Please think <u>again</u> about what you are going to send to someone else.</b>
         <div class="alert alert-warning text-center">Your message will be <b>forever</b> recorded on the XRPL. <b class="text-danger">There is no way to remove your message.</b> Please think about what you are sending. Your message is probably more permanent than a tattoo 😇</div>

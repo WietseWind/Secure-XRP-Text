@@ -34,7 +34,7 @@
                   <input v-model="$state.composer.value" class="text-right form-control alert-success border-success" placeholder="+0 XRP">
                 </div>
               </div>
-              <div class="form-group row pb-0 mb-2">
+              <div class="form-group row pb-0 mb-2" v-if="$state.accounts.length > 0">
                 <label class="col-sm-2 col-form-label col-form-label-sm">From</label>
                 <div class="col-sm-10">
                   <select class="form-control form-control-sm" v-model="$state.composer.from">
@@ -58,7 +58,7 @@
               <a @click="$state.composeClear(); $refs.recipient.query = ''" class="float-left mt-2 text-secondary d-block">
                 <small>
                   <i class="fa fa-times"></i>
-                  Clear message
+                  Destroy message
                 </small>
               </a>
               <button class="btn float-right" :disabled="!$state.composeMessageValid" :class="{ 'btn-primary' : $state.composeMessageValid, 'btn-light text-muted' : !$state.composeMessageValid }"><i class="far fa-paper-plane"></i> Send message</button>
