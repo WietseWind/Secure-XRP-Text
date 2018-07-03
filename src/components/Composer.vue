@@ -20,8 +20,18 @@
                 </span>
               </span>
             </div>
-            <div class="card-body pl-3 pt-2 pb-0 d-flex flex-column mb-0 pb-0" v-if="!$state.composer.$ui.minimized">
-              <div class="form-group row pb-0 mb-2">
+            <div class="card-body pl-3 pt-0 pb-0 d-flex flex-column mb-0 pb-0" v-if="!$state.composer.$ui.minimized">
+              <div class="form-group row pb-0" :class="{ 'mb-1 text-muted': $state.accounts.length === 1, 'mb-2 mt-2': $state.accounts.length !== 1 }">
+                <label class="col-sm-2 col-form-label col-form-label-sm">From</label>
+                <div v-if="$state.accounts.length === 1" class="col-sm-10" style="padding-top: 3px;"><code class="text-muted">{{ $state.accounts[0].address }}</code></div>
+                <div class="col-sm-10" v-else>
+                  <select class="form-control form-control-sm" v-model="$state.composer.from">
+                    <option value="" disabled>Select your account</option>
+                    <option v-bind:key="a.address" v-for="a in $state.accounts" :value="a.address">{{ a.name }} ({{ a.address }})</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row pt-0 mt-0 pb-0 mb-2">
                 <label class="col-sm-2 col-form-label">Recipient</label>
                 <div class="col-sm-8">
                   <TypeAhead ref="recipient" v-model="$state.composer.recipient" :classes="'ta-recipient'" :placeholder="placeholder" src=":keyword"
@@ -34,19 +44,10 @@
                   <input v-model="$state.composer.value" class="text-right form-control alert-success border-success" placeholder="+0 XRP">
                 </div>
               </div>
-              <div class="form-group row pb-0 mb-2" v-if="$state.accounts.length > 0">
-                <label class="col-sm-2 col-form-label col-form-label-sm">From</label>
-                <div class="col-sm-10">
-                  <select class="form-control form-control-sm" v-model="$state.composer.from">
-                    <option value="" disabled>Select your account</option>
-                    <option v-bind:key="a.address" v-for="a in $state.accounts" :value="a.address">{{ a.name }} ({{ a.address }})</option>
-                  </select>
-                </div>
-              </div>
               <div class="form-group row pb-0 mb-2">
-                <label class="col-sm-2 col-form-label col-form-label-sm">Subject</label>
+                <label class="col-sm-2 col-form-label">Subject</label>
                 <div class="col-sm-10">
-                  <input class="form-control form-control-sm" v-model="$state.composer.subject" placeholder="...">
+                  <input class="form-control" v-model="$state.composer.subject" placeholder="...">
                 </div>
               </div>
               <textarea class="mt-2 mb-0 form-control" v-model.lazy="$state.composer.text" v-debounce="250" placeholder="Your message..."></textarea>
