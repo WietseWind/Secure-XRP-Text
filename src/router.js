@@ -7,7 +7,7 @@ import Composer from '@/components/Composer'
 
 // import About from '@/routes/About'
 // import AddAccount from '@/routes/AddAccount'
-// import AddressBook from '@/routes/AddressBook'
+import AddressBook from '@/routes/AddressBook'
 // import Compose from '@/routes/Compose'
 // import Drafts from '@/routes/Drafts'
 
@@ -51,6 +51,7 @@ export default new Router({
         default: true,
         composer: false
       }
+    },
     // },
     // {
     //   path: '/about/',
@@ -67,11 +68,11 @@ export default new Router({
     //   name: 'Compose',
     //   component: Compose
     // },
-    // {
-    //   path: '/addressbook/',
-    //   name: 'AddressBook',
-    //   component: AddressBook
-    // },
+    {
+      path: '/addressbook/',
+      name: 'AddressBook',
+      component: AddressBook
+    }
     // {
     //   path: '/sent/',
     //   name: 'Sent',
@@ -81,6 +82,5 @@ export default new Router({
     //   path: '/drafts/',
     //   name: 'Drafts',
     //   component: Drafts
-    }
   ]
 })

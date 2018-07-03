@@ -16,7 +16,7 @@
         <Login />
       </AppLoading>
     </div>
-    <div id="ready" v-if="$state.ready && $state.consent && $state.encryptedAccounts.length > 0" v-show="$state.accounts.length > 0">
+    <div id="ready" v-show="$state.ready && $state.consent && $state.encryptedAccounts.length > 0 && $state.accounts.length > 0">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="header container-fluid bg-light">
           <div class="container">
@@ -34,7 +34,7 @@
               <div v-if="$state.ui.topRightMenu" class="dropdown-menu d-block dropdown-menu-right">
                 <!-- <router-link tag="button" to="/" class="dropdown-item" type="router-link">Accounts</router-link> -->
                 <!-- <div class="dropdown-divider"></div> -->
-                <a href="" onclick="return false;" @click="$state.logout" class="pl-3 text-primary dropdown-item"><i class="fas fa-fw fa-users"></i> Contacts</a>
+                <router-link :to="{ name: 'AddressBook' }" class="pl-3 text-primary dropdown-item"><i class="fas fa-fw fa-users"></i> Contacts</router-link>
                 <!-- <div class="dropdown-divider"></div> -->
                 <a href="" onclick="return false;" @click="$state.logout" class="pl-3 dropdown-item"><i class="fas fa-fw fa-lock"></i> Lock session</a>
                 <div class="dropdown-divider"></div>
