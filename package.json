@@ -18,10 +18,14 @@
     "ripple-bip32": "0.0.3",
     "ripple-keypairs": "^0.10.1",
     "ripple-sign-keypairs": "^1.0.2",
+    "rippled-ws-client": "0.0.6",
+    "rippled-ws-client-pool": "0.0.3",
+    "rippled-ws-client-sign": "^0.1.1",
     "v-debounce": "^0.1.2",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
-    "vue2-bootstrap4-typeahead": "^1.0.3"
+    "vue2-bootstrap4-typeahead": "^1.0.3",
+    "websocket": "^1.0.26"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

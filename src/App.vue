@@ -57,6 +57,11 @@
 
       <router-view />
       <router-view name="composer" class="mb-3" />
+
+      <hr />
+      <p class="text-center">
+        <small class="text-muted">{{ $state.xrplPool.lastLedger }}</small>
+      </p>
       <!-- v-if="1 === 1 || $store" -->
     </div>
   </div>

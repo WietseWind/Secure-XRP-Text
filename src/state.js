@@ -1,6 +1,9 @@
 import Vue from 'vue'
 import localforage from 'localforage'
 import crypto from 'crypto'
+import RippledWsClientPool from 'rippled-ws-client-pool'
+
+const xrplPool = new RippledWsClientPool()
 
 localforage.config({ name: 'XrpMessaging', version: 1.0, storeName: 'xrpmessaging', description: 'Send encrypted messages on the XRPL' })
 
@@ -27,6 +30,10 @@ export default new Vue({
         $cursor: { ledger: 0 },
         inbox: [],
         sent: []
+      },
+      xrplPool: {
+        activated: false,
+        lastLedger: 0
       }
     }
   },
@@ -43,7 +50,14 @@ export default new Vue({
     },
     'encryptedAccounts': {
       deep: true,
-      handler () {
+      handler (accounts) {
+        if (accounts.length > 0) {
+          accounts.map(a => {
+            return a.address
+          }).forEach(a => {
+            xrplPool.subscribeAccount(a)
+          })
+        }
         this.persist()
       }
     }
@@ -57,6 +71,24 @@ export default new Vue({
     }
   },
   methods: {
+    connectXrpl () {
+      if (!this.xrplPool.activated) {
+        this.xrplPool.activated = true
+        let servers = [
+          'wss://s1.ripple.com',
+          'wss://s2.ripple.com',
+          'wss://rippled-dev.xrpayments.co',
+          'wss://kyte.peerisland.com'
+        ]
+        servers.forEach(s => xrplPool.addServer(s))
+        xrplPool.on('ledger', l => {
+          this.xrplPool.lastLedger = l
+        })
+        // setInterval(() => {
+        //   console.log('xrplPool.getRanking', xrplPool.getRanking().ranking)
+        // }, 2000)
+      }
+    },
     addAccount (accountData, passHash) {
       this.encryptedAccounts.push({
         address: accountData.address,
@@ -138,6 +170,21 @@ export default new Vue({
         Object.assign(this, s)
       }
       this.ready = true
+
+      // Todo: move this some place where it makes sense
+      this.connectXrpl()
+
+      // Development
+      if (process.env.NODE_ENV === 'development') {
+        if (typeof window.localStorage['_'] === 'string') {
+          let loginHash = window.localStorage['_']
+          if (loginHash.length !== 32) {
+            loginHash = crypto.createHash('sha1').update(loginHash).digest('hex').slice(0, 32)
+          }
+          console.log('DEVELOPMENT! AUTO LOGIN BASED ON LOCALSTORAGE[_]')
+          this.login(loginHash)
+        }
+      }
     })
   }
 })
